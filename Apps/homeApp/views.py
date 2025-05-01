@@ -789,7 +789,7 @@ def predict_fraud_csv(request):
     if request.method != 'POST' or not request.FILES.get('csv_file'):
         return HttpResponseBadRequest("Invalid request. Please upload a CSV file using POST.")
     
-    print("🔁 View called")
+    print("View called")
     try:
         uploaded_file = request.FILES['csv_file']
         
@@ -798,7 +798,7 @@ def predict_fraud_csv(request):
             new_data = pd.read_csv(uploaded_file, skipinitialspace=True)
             if new_data.empty:
                 return JsonResponse({"error": "Uploaded CSV is empty"})
-            print(f"✅ CSV loaded with shape {new_data.shape}")
+            print(f"CSV loaded with shape {new_data.shape}")
             
             # Transform data to match column semantics (if original V columns exist)
             new_data = transform_input_data(new_data)
@@ -923,9 +923,9 @@ def predict_fraud_csv(request):
                 )
                 supervised_model.fit(X_train_resampled, y_train_resampled)
                 
-                print(f"✅ Supervised model trained with {X_train_resampled.shape[0]} samples")
+                print(f"Supervised model trained with {X_train_resampled.shape[0]} samples")
             except Exception as e:
-                print(f"⚠️ Could not train supervised model: {str(e)}")
+                print(f"Could not train supervised model: {str(e)}")
                 supervised_model = None
         
         # Process new data for prediction
@@ -980,7 +980,7 @@ def predict_fraud_csv(request):
             new_data['Fraud_Probability'] = fraud_probs
             
         except Exception as e:
-            print(f"❌ Error during prediction: {str(e)}")
+            print(f"Error during prediction: {str(e)}")
             import traceback
             traceback.print_exc()
             return JsonResponse({"error": f"Prediction error: {str(e)}"}, status=500)
@@ -1028,7 +1028,7 @@ def predict_fraud_csv(request):
         })
     
     except Exception as e:
-        print(f"❌ Exception: {str(e)}")
+        print(f"Exception: {str(e)}")
         import traceback
         traceback.print_exc()
         return JsonResponse({"error": str(e)}, status=500)

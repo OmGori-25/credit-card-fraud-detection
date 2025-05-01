@@ -1,134 +1,410 @@
-{% extends "index.html" %}
 {% load static %}
-{% block title %}
-Home | Fraud Detection System
-{% endblock %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fraud Detection Dashboard</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+      .drop-zone {
+        border: 2px dashed #cbd5e0;
+        border-radius: 0.5rem;
+        transition: all 0.3s ease;
+      }
+      .drop-zone:hover,
+      .drop-zone.active {
+        border-color: #4f46e5;
+        background-color: #f3f4f6;
+      }
+      .spinner {
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top: 3px solid #4f46e5;
+        width: 24px;
+        height: 24px;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+      .flash {
+        animation: flash-animation 0.5s;
+      }
+      @keyframes flash-animation {
+        0% {
+          background-color: rgba(79, 70, 229, 0.1);
+        }
+        100% {
+          background-color: transparent;
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+      <!-- Header -->
+      <header
+        class="flex flex-col md:flex-row justify-between items-center mb-8"
+      >
+        <div>
+          <h1 class="text-3xl font-bold text-gray-800">
+            Fraud Detection System
+          </h1>
+          <p class="text-gray-600 mt-1">
+            Upload transaction data to detect potential fraud
+          </p>
+        </div>
+        <div class="mt-4 md:mt-0">
+          <span
+            id="statusBadge"
+            class="px-3 py-1 rounded-full text-sm font-medium bg-gray-200 text-gray-800"
+          >
+            Ready
+          </span>
+        </div>
+      </header>
 
-{% block css %}
+      <!-- Main Content -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Upload Panel -->
+        <div class="lg:col-span-1 bg-white rounded-lg shadow p-6">
+          <h2 class="text-xl font-semibold text-gray-800 mb-4">Upload Data</h2>
 
-<link href="{% static 'assets/css/teststyle.css' %}" rel="stylesheet">
-<link href="{% static 'assets/css/style.css' %}" rel="stylesheet">
+          <form id="uploadForm" enctype="multipart/form-data">
+            {% csrf_token %}
 
-{% endblock %}
-{% block content %}
-<main id="main" >
+            <div
+              id="dropZone"
+              class="drop-zone p-8 mb-4 text-center cursor-pointer"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-12 w-12 mx-auto text-gray-400 mb-2"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                />
+              </svg>
+              <p class="text-gray-600 mb-1">Drag & drop your CSV file here</p>
+              <p class="text-gray-500 text-sm">or</p>
+              <input
+                id="fileInput"
+                type="file"
+                name="csv_file"
+                class="hidden"
+                accept=".csv"
+                required
+              />
+              <button
+                type="button"
+                id="browseButton"
+                class="mt-2 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                Browse Files
+              </button>
+            </div>
 
-    <!-- ======= Hero Section ======= -->
-    <section id="homesection" style="padding: 0px 0px;"></section> 
-         <!--__________________________________ header-box______________________________________________ -->
- <div id="header-container">
-	<h1 id="header2">Multi data Csv Prediction Result</h1>
+            <div id="fileInfo" class="hidden mb-4 p-3 bg-gray-50 rounded-md">
+              <div class="flex items-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-5 w-5 text-gray-500 mr-2"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+                <span
+                  id="fileName"
+                  class="text-sm font-medium text-gray-900 truncate"
+                  >file.csv</span
+                >
+              </div>
+              <div class="mt-1 flex items-center text-xs text-gray-500">
+                <span id="fileSize">0 KB</span>
+                <span class="mx-1">•</span>
+                <span id="fileRows">Calculating...</span>
+              </div>
+            </div>
 
-</div>
-<div class="container" style="width: 90%;margin-top: 13px;" >
-<table id="example" class="table table-striped table-bordered dt-responsive nowrap table-wrapper-scroll-y my-custom-scrollbar" style="width:100%;">
-  <thead>
-      <tr>
-          <th>Sr No.</th>
-          <th>Fraud or Not</th>
-          
-          <th>Time</th>
-          <th>V1</th>
-          <th>V2</th>
-          <th>V3</th>
-          <th>V4</th>
-          <th>V5</th>
-          <th>V6</th>
-          <th>V7</th>
-          <th>V8</th>
-          <th>V9</th>
-          <th>V10</th>
-          <th>V11</th>
-          <th>V12</th>
-          <th>V13</th>
-          <th>V14</th>
-          <th>V15</th>
-          <th>V16</th>
-          <th>V17</th>
-          <th>V18</th>
-          <th>V19</th>
-          <th>V20</th>
-          <th>V21</th>
-          <th>V22</th>
-          <th>V23</th>
-          <th>V24</th>
-          <th>V25</th>
-          <th>V26</th>
-          <th>V27</th>
-          <th>V28</th>
-          <th>Amount</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td>1.</td>
-          <td>Fraud Transaction</td>
-          <td>1.0 </td>
-          <td>Edinburgh</td>
-          <td>Edinburgh</td>
-          <td>Edinburgh</td>
-          <td>Edinburgh</td>
-          <td>Edinburgh</td>
-          <td>Edinburgh</td>
-          <td>Edinburgh</td>
-          <td>Edinburgh</td>
-          <td>Edinburgh</td>
-          <td>Edinburgh</td>
-          <td>Edinburgh</td>
-          <td>Edinburgh</td>
-          <td>Edinburgh</td>
-          <td>Edinburgh</td>
-          <td>Edinburgh</td>
-          <td>Edinburgh</td>
-          <td>Edinburgh</td>
-          <td>Edinburgh</td>
-          <td>Edinburgh</td>
-          <td>Edinburgh</td>
-          <td>Edinburgh</td>
-          <td>Edinburgh</td>
-          <td>Edinburgh</td>
-          <td>Edinburgh</td>
-          <td>Edinburgh</td>
-          <td>Edinburgh</td>
-          <td>Edinburgh</td>
-          <td>Edinburgh</td>
-          <td>8.90</td>
-      </tr>
-      
-      
-    </tbody>  
-</table>
-</div>
-    </section><!-- End Hero -->
-  
-    </main>
+            <div class="flex items-center justify-between">
+              <button
+                type="submit"
+                id="submitButton"
+                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled
+              >
+                <span>Run Fraud Detection</span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="ml-2 h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M14 5l7 7m0 0l-7 7m7-7H3"
+                  />
+                </svg>
+              </button>
+              <div id="loadingSpinner" class="hidden spinner"></div>
+            </div>
+          </form>
 
+          <!-- Dataset Stats -->
+          <div class="mt-8 border-t pt-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-3">
+              Dataset Statistics
+            </h3>
+            <div id="noDataMessage" class="text-gray-500 text-sm">
+              No data processed yet. Upload a CSV to see statistics.
+            </div>
+            <div id="dataStats" class="hidden">
+              <div class="grid grid-cols-2 gap-4">
+                <div class="bg-gray-50 p-3 rounded-lg">
+                  <p class="text-xs text-gray-500">Total Transactions</p>
+                  <p id="statTotal" class="text-lg font-semibold text-gray-900">
+                    0
+                  </p>
+                </div>
+                <div class="bg-gray-50 p-3 rounded-lg">
+                  <p class="text-xs text-gray-500">Detected Fraud</p>
+                  <p id="statFraud" class="text-lg font-semibold text-red-600">
+                    0
+                  </p>
+                </div>
+                <div class="bg-gray-50 p-3 rounded-lg">
+                  <p class="text-xs text-gray-500">Fraud Rate</p>
+                  <p
+                    id="statFraudRate"
+                    class="text-lg font-semibold text-gray-900"
+                  >
+                    0%
+                  </p>
+                </div>
+                <div class="bg-gray-50 p-3 rounded-lg">
+                  <p class="text-xs text-gray-500">Detection Rate</p>
+                  <p
+                    id="statDetectionRate"
+                    class="text-lg font-semibold text-green-600"
+                  >
+                    0%
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-    <script>
-      $(document).ready(function() {
-        $('#example').DataTable( {
-            dom: 'Bfrtip',
-            buttons: [
-            { 
-          extend: 'copy',
-          text: 'Copy'
-       },
-            { 
-          extend: 'excel',
-          text: 'Download excel'
-       },
-           
-           
-            ],
-            initComplete: function () {
-                var btns = $('.dt-button');
-                btns.addClass('btn btn-primary btn-sm ');
-                btns.removeClass('dt-button');
-    
-            }
-        } );
-    } );
-    </script>
-{% endblock %}
+        <!-- Results Panel -->
+        <div class="lg:col-span-2">
+          <!-- Visualizations -->
+          <div
+            class="bg-white rounded-lg shadow p-6 mb-6"
+            id="visualizationPanel"
+          >
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">
+              Detection Results
+            </h2>
 
+            <div id="noResultsMessage" class="py-12 text-center">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-12 w-12 mx-auto text-gray-300 mb-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+              <p class="text-gray-500">
+                Upload a CSV file to see fraud detection results
+              </p>
+            </div>
 
+            <div id="resultsVisualizations" class="hidden">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <h3 class="text-sm font-medium text-gray-500 mb-2">
+                    Prediction Distribution
+                  </h3>
+                  <div class="aspect-w-16 aspect-h-9 relative h-48">
+                    <canvas id="predictionChart"></canvas>
+                  </div>
+                </div>
+                <div>
+                  <h3 class="text-sm font-medium text-gray-500 mb-2">
+                    Accuracy Metrics
+                  </h3>
+                  <div class="aspect-w-16 aspect-h-9 relative h-48">
+                    <canvas id="accuracyChart"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Results Table -->
+          <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-xl font-semibold text-gray-800">
+                Detailed Results
+              </h2>
+              <div class="flex space-x-2">
+                <input
+                  type="text"
+                  id="searchInput"
+                  placeholder="Search results..."
+                  class="px-3 py-1 text-sm border rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                />
+                <select
+                  id="filterSelect"
+                  class="text-sm border rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                >
+                  <option value="all">All Results</option>
+                  <option value="fraud">Fraud Only</option>
+                  <option value="normal">Normal Only</option>
+                  <option value="correct">Correct Predictions</option>
+                  <option value="incorrect">Incorrect Predictions</option>
+                </select>
+              </div>
+            </div>
+
+            <div
+              id="noTableResultsMessage"
+              class="py-6 text-center text-gray-500"
+            >
+              No results to display yet
+            </div>
+
+            <div id="resultsTableContainer" class="hidden">
+              <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                  <thead class="bg-gray-50">
+                    <tr id="resultsTableHeader">
+                      <!-- Headers will be added dynamically -->
+                    </tr>
+                  </thead>
+                  <tbody
+                    id="resultsTableBody"
+                    class="bg-white divide-y divide-gray-200"
+                  >
+                    <!-- Results will be added dynamically -->
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="mt-4 flex items-center justify-between">
+                <div class="text-sm text-gray-500">
+                  Showing <span id="visibleRowCount">0</span> of
+                  <span id="totalRowCount">0</span> results
+                </div>
+                <div class="flex space-x-1">
+                  <button
+                    id="prevPageBtn"
+                    class="px-2 py-1 border rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Previous
+                  </button>
+                  <span id="paginationInfo" class="px-2 py-1 text-sm"
+                    >Page 1</span
+                  >
+                  <button
+                    id="nextPageBtn"
+                    class="px-2 py-1 border rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notification -->
+      <div
+        id="notification"
+        class="fixed right-4 bottom-4 max-w-md p-4 bg-white rounded-lg shadow-lg border-l-4 border-indigo-500 transform translate-y-20 opacity-0 transition-all duration-300"
+      >
+        <div class="flex items-start">
+          <div class="flex-shrink-0">
+            <svg
+              id="notificationIcon"
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5 text-indigo-500"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                clip-rule="evenodd"
+              />
+            </svg>
+          </div>
+          <div class="ml-3 w-0 flex-1">
+            <p id="notificationTitle" class="text-sm font-medium text-gray-900">
+              Success
+            </p>
+            <p id="notificationMessage" class="mt-1 text-sm text-gray-500">
+              Processing complete
+            </p>
+          </div>
+          <div class="ml-4 flex-shrink-0 flex">
+            <button
+              id="closeNotification"
+              class="bg-white rounded-md inline-flex text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              <span class="sr-only">Close</span>
+              <svg
+                class="h-5 w-5"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="{% static 'assets/js/fraud-detection.js' %}"></script>
+  </body>
+</html>

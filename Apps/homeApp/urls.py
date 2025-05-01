@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.urls import path,include
 from .views import base,delete_data,upload_data,predict_csv_single,predict_csv_multi,predict_data_manually,view_data,analysis,change_password,login2,account_details,add_files_multi,about,dashboard,userLogout,reports,upload_credit_data,prediction_button,enter_form_data_manually,add_files_single
+from . import views 
 
 urlpatterns = [
     path('',base),
@@ -30,4 +31,6 @@ urlpatterns = [
     path('change_password/',change_password,name='change_password'),
     path('analysis/',analysis,name='analysis'),
     path('view_data/',view_data,name='view_data'),
+    # path('predict_fraud/',predict_fraud_csv,name='predict_fraud_csv'),
+    path('predict_fraud_csv/', views.predict_fraud_csv, name='predict_fraud_csv'),
 ]

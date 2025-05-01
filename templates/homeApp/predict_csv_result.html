@@ -1,0 +1,23 @@
+{% extends 'homeApp/base.html' %} {% block content %}
+<h2>Prediction Results</h2>
+
+{% if error %}
+<p style="color: red">{{ error }}</p>
+{% else %}
+<table border="1">
+  <tr>
+    <th>Time</th>
+    <th>Amount</th>
+    <th>Isolation Forest</th>
+    <th>DBSCAN</th>
+  </tr>
+  {% for row in predictions %}
+  <tr>
+    <td>{{ row.Time }}</td>
+    <td>{{ row.Amount }}</td>
+    <td>{{ row.IsolationForest_Prediction }}</td>
+    <td>{{ row.DBSCAN_Prediction }}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% endif %} {% endblock %}
